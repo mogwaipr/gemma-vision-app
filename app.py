@@ -244,12 +244,11 @@ if submit_button:
 
             AUDIT INSTRUCTIONS:
             1. Verify whether the declared Subclass ({selected_subclass}) accurately matches the product description printed on the front or back label images.
-            2. Verify that the Net Contents ({selected_net_contents}) matches the printed label text and complies with statutory volume standards.
-            3. Verify that the Alcohol Content is specified in the front label.
-            4. Verify that the Company/Manufacturer Name ({company_name}) and Producer/Bottler Location ({location_address}) match the mandatory name and address statement printed on the label.
-            5. Check that mandatory elements under {active_guideline['cfr_part']} (e.g. Government Warning statement, alcohol percentage, manufacturer name, location) are explicitly visible on the label images.
+            2. Verify that the Net Contents ({selected_net_contents}) matches the printed label text and complies with statutory volume standards..
+            3. Verify that the Company/Manufacturer Name ({company_name}) and Producer/Bottler Location ({location_address}) match the mandatory name and address statement printed on the label.
+            4. Check that mandatory elements under {active_guideline['cfr_part']} (e.g. Government Warning statement, alcohol percentage, manufacturer name, location) are explicitly visible on the label images.
             {sulfite_instruction}
-            6. Detail any discrepancies, missing mandatory regulatory elements, or formatting non-conformities clearly.
+            5. Detail any discrepancies, missing mandatory regulatory elements, or formatting non-conformities clearly.
             """
 
             # Append the prompt text to the user content array
@@ -268,7 +267,7 @@ if submit_button:
                 ],
                 "stream": True,
                 "temperature": 0.2,
-                "max_tokens": 1500
+                "max_tokens": -1
             }
 
             try:
@@ -292,9 +291,12 @@ if submit_button:
                                 content_chunk = delta.get("content")
                                 if content_chunk:
                                     output_text += content_chunk
-                                    res_placeholder.markdown(output_text)
+                                    res_placeholder.markdown(output_text + "▌")
                             except json.JSONDecodeError:
                                 continue
+                
+                # Final render without streaming cursor
+                res_placeholder.markdown(output_text)
 
             except requests.exceptions.Timeout:
                 st.error("The request timed out after 5 minutes. Check model complexity or local GPU/Metal load.")
