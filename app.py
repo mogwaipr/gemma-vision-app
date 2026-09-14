@@ -27,7 +27,7 @@ st.info(
 )
 
 # Endpoint URL for llama-server OpenAI-compatible chat API
-LLAMA_SERVER_URL = "http://localhost:8080/v1/chat/completions"
+LLAMA_SERVER_URL = "http://host.docker.internal:8080/v1/chat/completions"
 
 # =========================================================================
 # REGULATORY TAXONOMY MAP (27 CFR Parts 4, 5, 7)
