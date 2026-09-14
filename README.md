@@ -1,42 +1,74 @@
-# 🍸 TTB Alcoholic Beverage Label Compliance Verifier
+# Gemma Vision Streamlit App
 
-An automated compliance auditing prototype for the **Alcohol and Tobacco Tax and Trade Bureau (TTB)**. This application uses multimodal vision LLMs (`Gemma-4-12B`) served via `llama-server` to inspect uploaded beverage front/back labels against statutory standards (**27 CFR Parts 4, 5, and 7**).
-
----
-
-## 🛠️ Architecture Overview
-
-The system consists of two primary components:
-1. **Frontend / Audit Engine:** A Streamlit application (`app.py`) that handles payload formatting, regulatory rule resolution, Base64 image encoding, and live SSE stream parsing.
-2. **Local Multimodal Inference Server:** `llama-server` (from `llama.cpp`) running `Gemma-4-12B` with multimodal projection (`mmproj`) support.
+A Streamlit-based vision application connected to a local `llama-server` running Gemma 4 (12B IT).
 
 ---
 
-## 📋 Prerequisites
+## Architecture Overview
 
-- **Docker & Docker Desktop** installed and running.
-- **Git** installed.
-- **System Memory:** Minimum 16 GB RAM / Unified Memory (8–10 GB allocated for model weights).
-- **32 GB to run a good response time
+* **Backend:** Local `llama.cpp` server running `gemma-4-12B-it-GGUF` on port `8080`.
+* **Frontend:** Streamlit application running inside a Docker container on port `8501`.
+* **Networking:** The container reaches the host machine's Llama server via `http://host.docker.internal:8080`.
+
 ---
 
-## 🚀 Quickstart Guide
+## Prerequisites
 
-Choose the method that matches your host hardware setup:
+* [Git](https://git-scm.com/)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine on Linux)
+* A compiled [`llama.cpp`](https://github.com/ggerganov/llama.cpp) build (specifically the `./build/bin/llama-server` binary)
+* Sufficient VRAM / RAM to run Gemma 4 12B Q4_K_M
 
-### Method A: Native `llama-server` + Docker Streamlit (Recommended for macOS / Apple Silicon)
+---
 
-Running `llama-server` natively on Apple Silicon allows `llama.cpp` to leverage Apple Metal GPU acceleration directly via Unified Memory Architecture (UMA), while Streamlit runs isolated in Docker.
+## Quick Start Guide
 
-#### 1. Clone the Repositories
+### 1. Clone the Repository
+
 ```bash
-# Clone this repository
-git clone [https://github.com/your-username/gemma-vision-app.git](https://github.com/your-username/gemma-vision-app.git)
-cd gemma-vision-app
+git clone <YOUR_REPO_URL>
+cd <YOUR_REPO_DIR>
 
-# Clone and build llama.cpp (if not already built)
-git clone [https://github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) ~/llama.cpp
-cd ~/llama.cpp
-cmake -B build -DGGML_METAL=ON
-cmake --build build --config Release -j
+2. Start the Local Llama Server
+From your llama.cpp directory, launch llama-server. Ensure --host 0.0.0.0 is specified so requests from the Docker bridge can be accepted:
+./build/bin/llama-server \
+  -hf bartowski/gemma-4-12B-it-GGUF:Q4_K_M \
+  -ngl 99 \
+  -c 32768 \
+  --host 0.0.0.0 --port 
+  
+  curl http://localhost:8080/health  (to verify server running)
 
+  3. Build the Docker Image
+From the root of this project (where the Dockerfile resides), build the container image:
+
+docker build -t gemmavisionapp:latest .
+
+Verification: Confirm the image was created:
+
+docker images | grep gemmavisionapp
+
+4. Run the Streamlit Container
+Run the container with port 8501 mapped and --add-host enabled so the container can resolve host.docker.internal:
+
+docker run -d \
+  -p 8501:8501 \
+  --add-host=host.docker.internal:host-gateway \
+  --name gemmavisionapp \
+  gemmavisionapp:latest
+
+5. Access the Prototype Application
+Open your browser and navigate to:
+
+http://localhost:8501
+
+Troubleshooting & Verification
+Check container logs:
+Bash
+docker logs -f gemmavisionapp
+Verify container-to-host connectivity:
+Bash
+docker exec -it gemmavisionapp curl -I [http://host.docker.internal:8080/health](http://host.docker.internal:8080/health)
+Stop and remove container:
+Bash
+docker rm -f gemmavisionapp
