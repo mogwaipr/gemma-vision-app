@@ -15,7 +15,7 @@ if ! curl -s --connect-timeout 2 "$LLAMA_URL" > /dev/null; then
     echo "  cd ~/Projects/llama.cpp"
     echo "  ./build/bin/llama-server \\"
     echo "    -hf bartowski/gemma-4-12B-it-GGUF:Q4_K_M \\"
-    echo "    -ngl 99 -c 8192 --port 8080"
+    echo "    -ngl 99 -c 32768 --port 8080"
     echo "--------------------------------------------------------"
     exit 1
 fi
