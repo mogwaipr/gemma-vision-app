@@ -1,27 +1,21 @@
 #!/usr/bin/env bash
 set -e
 
-LLAMA_PORT=8080
-LLAMA_URL="http://localhost:${LLAMA_PORT}/v1/models"
+OLLAMA_PORT=11434
+OLLAMA_URL="http://localhost:${OLLAMA_PORT}/api/tags"
 
-echo "🔍 Checking for running llama-server on port ${LLAMA_PORT}..."
+echo "Checking for running Ollama on port ${OLLAMA_PORT}..."
 
-# Test if llama-server is actively responding
-if ! curl -s --connect-timeout 2 "$LLAMA_URL" > /dev/null; then
-    echo "❌ ERROR: llama-server is NOT running on port ${LLAMA_PORT}!"
-    echo "--------------------------------------------------------"
-    echo "Please start llama-server on your Mac host first:"
-    echo ""
-    echo "  cd ~/Projects/llama.cpp"
-    echo "  ./build/bin/llama-server \\"
-    echo "    -hf bartowski/gemma-4-12B-it-GGUF:Q4_K_M \\"
-    echo "    -ngl 99 -c 32768 --port 8080"
-    echo "--------------------------------------------------------"
+if ! curl -fsS --connect-timeout 2 "$OLLAMA_URL" > /dev/null; then
+    echo "ERROR: Ollama is not running on port ${OLLAMA_PORT}."
+    echo "Start Ollama and pull a vision-capable model first:"
+    echo "  ollama serve"
+    echo "  ollama pull gemma4:12b"
     exit 1
 fi
 
-echo "✅ llama-server detected!"
-echo "🚀 Building and starting TTB Label Compliance Verifier in Docker..."
+echo "Ollama detected."
+echo "Building and starting TTB Label Compliance Verifier in Docker..."
 
 docker build -t ttb-verifier-app .
 docker run -p 8501:8501 ttb-verifier-app
